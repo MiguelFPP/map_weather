@@ -18,8 +18,8 @@ class weatherController extends Controller
     public function __construct()
     {
         $this->client = new Client();
-        $this->api_key = '';
-        $this->endpoint = 'api.openweathermap.org/data/2.5/weather';
+        $this->api_key = config('services.weather.key');
+        $this->endpoint = config('services.weather.url');
     }
     /**
      * Display a listing of the resource.
@@ -86,7 +86,7 @@ class weatherController extends Controller
                 $history_detail = $this->convertHistoryData($history_detail);
                 $history_detail->main->format_created = $this->formatDate($history_detail->main->created_at);
             }
-            
+
             return view('home', ['id' => $id, 'history' => $history, 'history_detail' => $history_detail]);
         } else {
             return view('home', ['history' => $history]);
