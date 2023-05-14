@@ -9,5 +9,5 @@ class HistoryWeather extends Model
 {
     use HasFactory;
 
-    /* protected $table = 'info_weather'; */
+    protected $table = 'history_weathers';
 }
