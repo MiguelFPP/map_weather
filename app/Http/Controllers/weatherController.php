@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\info_weathers;
+use App\Models\HistoryWeather;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -26,7 +26,9 @@ class weatherController extends Controller
      */
     public function index()
     {
-        $history = info_weathers::take(10)->get();
+        $history = HistoryWeather::take(10)
+            ->orderBy('id', 'desc')
+            ->get();
         return view('home', ['history' => $history]);
     }
 
@@ -43,7 +45,7 @@ class weatherController extends Controller
      */
     public function store(Request $request)
     {
-        $history = info_weathers::take(10)->get();
+        $history = HistoryWeather::take(10)->get();
         $city = $request->city;
         if (!empty($city)) {
             $response = $this->client->get($this->endpoint . '?q=' . $city . ',&APPID=' . $this->api_key);
@@ -53,7 +55,7 @@ class weatherController extends Controller
             $data = json_decode($jsonData);
 
             if ($statusCode == 200) {
-                $info_weather = new info_weathers();
+                $info_weather = new HistoryWeather();
                 $info_weather->name_city = $city;
                 $info_weather->latitude = $data->coord->lat;
                 $info_weather->longitude = $data->coord->lon;
@@ -64,7 +66,7 @@ class weatherController extends Controller
                 $info_weather->pressure = $data->main->pressure;
                 $info_weather->humidity = $data->main->humidity;
                 $info_weather->save();
-                $history = info_weathers::take(10)->get();
+                $history = HistoryWeather::take(10)->get();
                 return view('home', ['data' => $data, 'status' => $statusCode, 'history' => $history]);
             }
         } else {
@@ -77,10 +79,12 @@ class weatherController extends Controller
      */
     public function show(string $id)
     {
-        $history = info_weathers::take(10)->get();
+        $history = HistoryWeather::take(10)
+            ->orderBy('id', 'desc')
+            ->get();
         if (isset($id) && !empty($id)) {
 
-            $history_detail = info_weathers::where('id', $id)->get()->first();
+            $history_detail = HistoryWeather::where('id', $id)->get()->first();
 
             if (isset($history_detail) && !empty($history_detail)) {
                 $history_detail = $this->convertHistoryData($history_detail);

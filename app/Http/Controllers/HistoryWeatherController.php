@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\HistoryWeather;
 use App\Models\info_weathers;
 use Illuminate\Http\Request;
 
-class HistoryWeather extends Controller
+class HistoryWeatherController extends Controller
 {
     public function delete(int $id)
     {
-        $history = info_weathers::find($id);
+        $history = HistoryWeather::find($id);
 
         if(!$history){
             return redirect()->route('home')->message('History not found');
@@ -21,7 +22,7 @@ class HistoryWeather extends Controller
 
     public function clear()
     {
-        $info=info_weathers::all();
+        $info=HistoryWeather::all();
 
         foreach ($info as $item) {
             $item->delete();

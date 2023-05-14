@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('info_weather', function (Blueprint $table) {
+        Schema::create('history_weather', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name_city',255);
             $table->decimal('latitude', 6, 4);
