@@ -26,18 +26,8 @@ class weatherController extends Controller
      */
     public function index()
     {
-        $history = HistoryWeather::take(10)
-            ->orderBy('id', 'desc')
-            ->get();
+        $history = $this->getHistory();
         return view('home', ['history' => $history]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -45,7 +35,7 @@ class weatherController extends Controller
      */
     public function store(Request $request)
     {
-        $history = HistoryWeather::take(10)->get();
+        $history = $this->getHistory();
         $city = $request->city;
         if (!empty($city)) {
             $response = $this->client->get($this->endpoint . '?q=' . $city . ',&APPID=' . $this->api_key);
@@ -55,18 +45,13 @@ class weatherController extends Controller
             $data = json_decode($jsonData);
 
             if ($statusCode == 200) {
-                $info_weather = new HistoryWeather();
-                $info_weather->name_city = $city;
-                $info_weather->latitude = $data->coord->lat;
-                $info_weather->longitude = $data->coord->lon;
-                $info_weather->temp = $data->main->temp;
-                $info_weather->feels_like = $data->main->feels_like;
-                $info_weather->temp_min = $data->main->temp_min;
-                $info_weather->temp_max = $data->main->temp_max;
-                $info_weather->pressure = $data->main->pressure;
-                $info_weather->humidity = $data->main->humidity;
-                $info_weather->save();
-                $history = HistoryWeather::take(10)->get();
+
+                app()->call([HistoryWeatherController::class, 'store'], [
+                    'data' => $data,
+                    'city' => $city
+                ]);
+
+                $history = $this->getHistory();
                 return view('home', ['data' => $data, 'status' => $statusCode, 'history' => $history]);
             }
         } else {
@@ -79,9 +64,7 @@ class weatherController extends Controller
      */
     public function show(string $id)
     {
-        $history = HistoryWeather::take(10)
-            ->orderBy('id', 'desc')
-            ->get();
+        $history = $this->getHistory();
         if (isset($id) && !empty($id)) {
 
             $history_detail = HistoryWeather::where('id', $id)->get()->first();
@@ -97,6 +80,14 @@ class weatherController extends Controller
         }
     }
 
+    /**
+     * The function converts historical weather data from an array to an object in PHP.
+     * 
+     * @param object data The parameter `` is an object that contains historical weather data for
+     * a city.
+     * 
+     * @return object an object that contains the converted historical weather data.
+     */
     public function convertHistoryData(object $data): object
     {
         $history_detail = [
@@ -124,32 +115,30 @@ class weatherController extends Controller
         return $history_detail;
     }
 
+    /**
+     * This function formats a given date string into a translated format of day, month, and year.
+     * 
+     * @param string date The input parameter "date" is a string representing a date in any valid
+     * format that can be parsed by the Carbon library.
+     * 
+     * @return string The function `formatDate` is returning a string that represents the given date in
+     * the format of "day month year".
+     */
     public function formatDate(string $date): string
     {
         return Carbon::parse($date)->translatedFormat('d F Y');
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * This function returns the history of weather data by calling the index method of the
+     * HistoryWeatherController class.
+     * 
+     * @return object The `getHistory()` function is returning an object that is obtained by calling
+     * the `index()` function of the `HistoryWeatherController`.
      */
-    public function edit(string $id)
+    public function getHistory(): object
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $history = app()->call([HistoryWeatherController::class, 'index']);
+        return $history;
     }
 }
