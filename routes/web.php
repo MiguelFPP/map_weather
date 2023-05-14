@@ -15,11 +15,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
+/* Route::get('/', function () {
     return view('welcome');
-});
+}); */
 
-Route::get('/weather',[weatherController::class,'index'])->name('home');
+Route::get('/',[weatherController::class,'index'])->name('home');
 Route::post('/weather',[weatherController::class,'store'])->name('search');
 Route::get('/weather/{id}',[weatherController::class,'show'])->name('history');
 
